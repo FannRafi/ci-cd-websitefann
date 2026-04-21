@@ -22,7 +22,7 @@ jobs:
 
       - name: Test SSH
         run: |
-          ssh -p 8022 -i ~/.ssh/id_ed25519 \
+          ssh -p 8022 -i ~/.ssh/deploy_key \
           -o StrictHostKeyChecking=no \
           -o BatchMode=yes \
           ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "echo CONNECTED"
@@ -30,6 +30,6 @@ jobs:
       - name: Deploy to Server
         run: |
           rsync -avz --delete \
-          -e "ssh -p 8022 -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
+          -e "ssh -p 8022 -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
           ${{ github.workspace }}/ \
           ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:${{ secrets.DEPLOY_PATH }}
