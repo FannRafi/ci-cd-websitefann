@@ -10,22 +10,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Setup SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/tes_server_polindra
-        chmod 600 ~/.ssh/tes_server_polindra
-        ssh-keyscan -p 8022 -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p 8022 -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
-    - name: Deploy to Server
-      run: |
-        echo "USER: ${{ secrets.SERVER_USER }}"
-        echo "IP: ${{ secrets.SERVER_IP }}"
-        ssh -vvv -p 8022 -i ~/.ssh/tes_server_polindra -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}
-        rsync -avz --delete \
-        -e "ssh -p 8022 -i ~/.ssh/tes_server_polindra" \
-        ${{ github.workspace }}/ \
-        ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:${{ secrets.DEPLOY_PATH }}
+      - name: Test SSH
+        run: |
+          ssh -p 8022 -i ~/.ssh/id_ed25519 \
+          -o StrictHostKeyChecking=no \
+          -o BatchMode=yes \
+          ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "echo CONNECTED"
+
+      - name: Deploy to Server
+        run: |
+          rsync -avz --delete \
+          -e "ssh -p 8022 -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
+          ${{ github.workspace }}/ \
+          ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:${{ secrets.DEPLOY_PATH }}
